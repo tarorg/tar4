@@ -1,19 +1,18 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const categories = [
-    "All", "Products", "Files", "Posts", "Parai", "Pathai", "Settings", "Links", "Reports"
+const modules = [
+    "All", "Products", "Files", "Posts", "Pathai", "Settings", "Links", "Reports", "Pin"
 ];
 
 const searchResults = [
-    { title: "Product A", category: "Products", description: "High-quality product" },
-    { title: "Product B", category: "Products", description: "Bestselling item" },
-    { title: "Product C", category: "Products", description: "Limited edition release" },
+    { title: "Product A", category: "Products", description: "High-quality product", price: "$19.99" },
+    { title: "Product B", category: "Products", description: "Bestselling item", price: "$24.99" },
+    { title: "Product C", category: "Products", description: "Limited edition release", price: "$39.99" },
     { title: "Important File", category: "Files", description: "Quarterly report" },
     { title: "Latest Post", category: "Posts", description: "New feature announcement" },
     { title: "Product Review", category: "Posts", description: "In-depth analysis of Product B" },
     { title: "Company Update", category: "Posts", description: "Exciting news about our growth" },
-    { title: "Parai Item", category: "Parai", description: "Traditional instrument" },
     { title: "Pathai Route", category: "Pathai", description: "Scenic route information" },
     { title: "User Settings", category: "Settings", description: "Manage your account" },
     { title: "Personal Website", category: "Links", description: "My portfolio and blog" },
@@ -32,13 +31,26 @@ const searchResults = [
             <form class="mb-8">
                 <div class="flex">
                     <select id="search-filter" class="flex-shrink-0 z-10 inline-flex items-center py-2.5 px-4 text-sm font-medium text-gray-900 bg-gray-100 border border-gray-300 rounded-s-lg hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600">
-                        {categories.map((category) => (
-                            <option value={category}>{category}</option>
+                        {modules.map((module) => (
+                            <option value={module}>{module}</option>
                         ))}
                     </select>
                     <input type="search" id="search-input" class="block p-2.5 w-full z-20 text-sm text-gray-900 bg-gray-50 rounded-e-lg border-s-0 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500" placeholder="Search..." required />
                 </div>
             </form>
+
+            <div id="pin-blocks" class="hidden mb-4">
+                <div class="flex justify-between">
+                    <div class="w-1/2 p-2 bg-gray-100 rounded mr-2">
+                        <h3 class="font-medium">Customer</h3>
+                        <p class="text-sm">John Doe</p>
+                    </div>
+                    <div class="w-1/2 p-2 bg-gray-100 rounded ml-2">
+                        <h3 class="font-medium">Cart</h3>
+                        <p class="text-sm">2 items - $44.98</p>
+                    </div>
+                </div>
+            </div>
 
             <ul class="divide-y divide-gray-100" id="search-results">
                 {searchResults.map((result) => (
@@ -47,6 +59,7 @@ const searchResults = [
                             <div>
                                 <h2 class="text-base font-medium text-gray-800">{result.title}</h2>
                                 <p class="text-sm text-gray-600 mt-1">{result.description}</p>
+                                {result.price && <p class="text-sm font-medium text-blue-600 mt-1">{result.price}</p>}
                             </div>
                             <span class="text-xs text-gray-400">{result.category}</span>
                         </div>
@@ -57,35 +70,70 @@ const searchResults = [
     </div>
 </Layout>
 
-<script>
-    const searchInput = document.getElementById('search-input') as HTMLInputElement;
-    const searchFilter = document.getElementById('search-filter') as HTMLSelectElement;
+<script define:vars={{ modules }}>
+    const searchInput = document.getElementById('search-input');
+    const searchFilter = document.getElementById('search-filter');
     const resultsList = document.getElementById('search-results');
+    const pinBlocks = document.getElementById('pin-blocks');
     
-    if (searchInput && searchFilter && resultsList) {
+    if (searchInput && searchFilter && resultsList && pinBlocks) {
         const listItems = resultsList.getElementsByTagName('li');
 
         function filterResults() {
             const searchTerm = searchInput.value.toLowerCase();
-            const selectedCategory = searchFilter.value;
+            const selectedModule = searchFilter.value;
 
-            for (let item of listItems) {
+            Array.from(listItems).forEach(item => {
                 const title = item.querySelector('h2')?.textContent?.toLowerCase() || '';
                 const description = item.querySelector('p')?.textContent?.toLowerCase() || '';
                 const category = item.querySelector('span')?.textContent || '';
+                const categorySpan = item.querySelector('span');
 
                 const matchesSearch = title.includes(searchTerm) || description.includes(searchTerm);
-                const matchesCategory = selectedCategory === 'All' || category === selectedCategory;
+                const matchesModule = selectedModule === 'All' || category === selectedModule;
 
-                if (matchesSearch && matchesCategory) {
-                    item.style.display = '';
+                if (selectedModule === 'Pin') {
+                    if (category === 'Products' && matchesSearch) {
+                        item.style.display = '';
+                        if (categorySpan) categorySpan.style.display = 'none';
+                    } else {
+                        item.style.display = 'none';
+                    }
                 } else {
-                    item.style.display = 'none';
+                    if (matchesSearch && matchesModule) {
+                        item.style.display = '';
+                        if (categorySpan) categorySpan.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
                 }
+            });
+
+            // Apply layout changes
+            if (selectedModule === 'Pin') {
+                pinBlocks.style.display = 'block';
+                resultsList.classList.add('grid', 'grid-cols-2', 'gap-4');
+                resultsList.classList.remove('divide-y');
+            } else {
+                pinBlocks.style.display = 'none';
+                resultsList.classList.remove('grid', 'grid-cols-2', 'gap-4');
+                resultsList.classList.add('divide-y');
             }
+
+            // Save the selected module to localStorage
+            localStorage.setItem('selectedModule', selectedModule);
         }
 
         searchInput.addEventListener('input', filterResults);
         searchFilter.addEventListener('change', filterResults);
+
+        // Load the saved module from localStorage
+        const savedModule = localStorage.getItem('selectedModule');
+        if (savedModule && modules.includes(savedModule)) {
+            searchFilter.value = savedModule;
+        }
+
+        // Initial filter application
+        filterResults();
     }
 </script>
