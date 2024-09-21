@@ -21,7 +21,15 @@ const taskEntities = [
           <option value="CO">Completed</option>
           <option value="NS">Not Started</option>
         </select>
-        <input type="search" id="task-search" class="block p-2.5 w-full z-20 text-sm text-gray-900 bg-gray-50 rounded-e-lg border-s-0 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500" placeholder="Search tasks..." required />
+        <div class="relative w-full">
+          <input type="search" id="task-search" class="block p-2.5 w-full z-20 text-sm text-gray-900 bg-gray-50 rounded-e-lg border-s-0 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500" placeholder="Search tasks..." required />
+          <button type="button" id="add-button" class="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-blue-700 rounded-e-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span class="sr-only">Add</span>
+          </button>
+        </div>
       </div>
     </form>
 
@@ -59,6 +67,14 @@ const taskEntities = [
           item.style.display = 'none';
         }
       }
+    });
+  }
+
+  const addButton = document.getElementById('add-button');
+  if (addButton) {
+    addButton.addEventListener('click', () => {
+      console.log('Add button clicked');
+      // You can add functionality here in the future
     });
   }
 </script>
