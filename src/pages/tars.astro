@@ -106,9 +106,6 @@ const searchResults = [
                                     </div>
                                     <p class="text-sm font-medium text-gray-900">{product.price}</p>
                                 </div>
-                                <button class="add-to-cart mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" data-product={JSON.stringify(product)}>
-                                    Add to Cart
-                                </button>
                             </div>
                         ))}
                     </div>
@@ -201,18 +198,23 @@ const searchResults = [
         
         const cartDisplay = document.querySelector('#container-cart p');
         if (cartDisplay) {
-            cartDisplay.textContent = `${totalItems} items - $${totalPrice.toFixed(2)}`;
+            cartDisplay.textContent = `${totalItems} item${totalItems !== 1 ? 's' : ''} - $${totalPrice.toFixed(2)}`;
         }
     }
 
     // Add event listeners for the "Add to Cart" buttons
-    document.querySelectorAll('.add-to-cart').forEach((button: Element) => {
-        button.addEventListener('click', (e: Event) => {
-            const target = e.target as HTMLButtonElement;
-            const product = JSON.parse(target.dataset.product || '{}');
-            addToCart(product);
+    function setupAddToCartButtons() {
+        document.querySelectorAll('.add-to-cart').forEach((button: Element) => {
+            button.addEventListener('click', (e: Event) => {
+                const target = e.target as HTMLButtonElement;
+                const product = JSON.parse(target.dataset.product || '{}');
+                addToCart(product);
+            });
         });
-    });
+    }
+
+    // Call this function to set up the event listeners
+    setupAddToCartButtons();
 
     // Initialize cart display
     updateCartDisplay();
