@@ -1,0 +1,60 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// We'll load the cart items client-side
+---
+
+<Layout title="Cart">
+  <div class="min-h-screen bg-white p-4">
+    <div class="w-full max-w-2xl mx-auto">
+      <h1 class="text-2xl font-bold mb-4">Your Cart</h1>
+      
+      <div id="cart-items">
+        <!-- Cart items will be loaded here -->
+      </div>
+
+      <div class="mt-4" id="cart-summary">
+        <!-- Cart summary will be loaded here -->
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  interface CartItem {
+    title: string;
+    price: string;
+    quantity: number;
+  }
+
+  function loadCart() {
+    const cartItems: CartItem[] = JSON.parse(localStorage.getItem('cart') || '[]');
+    const cartItemsContainer = document.getElementById('cart-items');
+    const cartSummary = document.getElementById('cart-summary');
+
+    if (cartItemsContainer && cartSummary) {
+      cartItemsContainer.innerHTML = cartItems.map((item, index) => `
+        <div class="flex justify-between items-center border-b py-4">
+          <div>
+            <h2 class="font-semibold">${item.title}</h2>
+            <p class="text-sm text-gray-600">Quantity: ${item.quantity}</p>
+          </div>
+          <p class="font-semibold">$${(parseFloat(item.price.replace('$', '')) * item.quantity).toFixed(2)}</p>
+        </div>
+      `).join('');
+
+      const subtotal = cartItems.reduce((sum, item) => sum + parseFloat(item.price.replace('$', '')) * item.quantity, 0);
+      const shipping = 8.00;
+      const total = subtotal + shipping;
+
+      cartSummary.innerHTML = `
+        <p class="flex justify-between"><span>Subtotal:</span> <span>$${subtotal.toFixed(2)}</span></p>
+        <p class="flex justify-between"><span>Shipping:</span> <span>$${shipping.toFixed(2)}</span></p>
+        <p class="flex justify-between font-bold mt-2"><span>Total:</span> <span>$${total.toFixed(2)}</span></p>
+      `;
+    }
+  }
+
+  // Load cart when the page loads
+  window.addEventListener('load', loadCart);
+</script>
