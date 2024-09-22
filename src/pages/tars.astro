@@ -46,13 +46,27 @@ const searchResults = [
 
             <div id="pin-blocks" class="hidden mb-4">
                 <div class="flex justify-between">
-                    <div class="w-1/2 p-2 bg-gray-100 rounded mr-2">
+                    <div id="container-customer" class="w-1/2 p-2 bg-gray-100 rounded mr-2 cursor-pointer">
                         <h3 class="font-medium">Customer</h3>
                         <p class="text-sm">John Doe</p>
                     </div>
                     <div id="container-cart" class="w-1/2 p-2 bg-gray-100 rounded ml-2 cursor-pointer">
                         <h3 class="font-medium">Cart</h3>
                         <p class="text-sm">2 items - $44.98</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update this bottom sheet for table selection -->
+            <div id="table-selector" class="fixed inset-x-0 bottom-0 bg-white rounded-t-3xl shadow-lg transform translate-y-full transition-transform duration-300 ease-in-out z-50">
+                <div class="p-4">
+                    <h3 class="text-lg font-semibold mb-4">Select Table</h3>
+                    <div class="grid grid-cols-5 gap-4">
+                        {Array.from({ length: 20 }, (_, i) => (
+                            <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors">
+                                <span class="text-gray-700 font-medium">{i + 1}</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -95,23 +109,28 @@ const searchResults = [
                 </ul>
 
                 <div id="pin-view" class="hidden">
-                    <h2 class="text-2xl font-bold tracking-tight text-gray-900 mb-6">Products</h2>
-                    <div class="grid grid-cols-2 gap-6">
+                    <div class="mb-4 flex flex-wrap gap-2">
+                        <button class="chip active" data-filter="all">All</button>
+                        <button class="chip" data-filter="food">Food</button>
+                        <button class="chip" data-filter="drink">Drink</button>
+                        <button class="chip" data-filter="dessert">Dessert</button>
+                    </div>
+                    <div class="divide-y divide-gray-100">
                         {searchResults.filter(item => item.category === "Products").map((product) => (
-                            <div class="group relative">
-                                <div class="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-md bg-gray-200">
+                            <div class="group relative flex items-center py-3" data-category={product.subcategory}>
+                                <div class="w-14 h-14 overflow-hidden rounded-md bg-gray-200 mr-4">
                                     <img src={product.imageUrl} alt={product.title} class="w-full h-full object-cover object-center" />
                                 </div>
-                                <div class="mt-4 flex justify-between">
-                                    <div>
-                                        <h3 class="text-sm text-gray-700">
-                                            <a href="#">
-                                                <span aria-hidden="true" class="absolute inset-0"></span>
-                                                {product.title}
-                                            </a>
-                                        </h3>
-                                        <p class="mt-1 text-sm text-gray-500">In stock: {product.stock}</p>
-                                    </div>
+                                <div class="flex-grow flex flex-col">
+                                    <h3 class="text-sm text-gray-700">
+                                        <a href="#">
+                                            <span aria-hidden="true" class="absolute inset-0"></span>
+                                            {product.title}
+                                        </a>
+                                    </h3>
+                                    <p class="mt-1 text-sm text-gray-500">{product.stock}</p>
+                                </div>
+                                <div class="flex-shrink-0 self-end">
                                     <p class="text-sm font-medium text-gray-900">{product.price}</p>
                                 </div>
                             </div>
@@ -123,6 +142,41 @@ const searchResults = [
     </div>
 </Layout>
 
+<style>
+    /* Add these styles to your existing styles */
+    .rounded-full {
+        transition: background-color 0.3s ease;
+    }
+    
+    .rounded-full:hover {
+        background-color: #e5e7eb;
+    }
+    
+    #table-selector {
+        background-color: white !important;
+        z-index: 9999 !important;
+    }
+    
+    .chip {
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        background-color: #f3f4f6;
+        color: #4b5563;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+    }
+
+    .chip:hover {
+        background-color: #e5e7eb;
+    }
+
+    .chip.active {
+        background-color: #1d4ed8; /* bg-blue-700 */
+        color: white;
+    }
+</style>
+
 <script>
     const searchInput = document.getElementById('search-input') as HTMLInputElement;
     const searchFilter = document.getElementById('search-filter') as HTMLSelectElement;
@@ -130,8 +184,10 @@ const searchResults = [
     const pinView = document.getElementById('pin-view');
     const pinBlocks = document.getElementById('pin-blocks');
     const containerCart = document.getElementById('container-cart');
+    const containerCustomer = document.getElementById('container-customer');
+    const tableSelector = document.getElementById('table-selector');
     
-    if (searchInput && searchFilter && listView && pinView && pinBlocks && containerCart) {
+    if (searchInput && searchFilter && listView && pinView && pinBlocks && containerCart && containerCustomer && tableSelector) {
         function filterResults() {
             const searchTerm = searchInput.value.toLowerCase();
             const selectedModule = searchFilter.value;
@@ -181,6 +237,29 @@ const searchResults = [
 
         containerCart.addEventListener('click', () => {
             window.location.href = '/cart';
+        });
+
+        containerCustomer.addEventListener('click', () => {
+            tableSelector.classList.toggle('translate-y-full');
+        });
+
+        // Close the bottom sheet when clicking outside of it
+        document.addEventListener('click', (event) => {
+            if (!tableSelector.contains(event.target as Node) && !containerCustomer.contains(event.target as Node)) {
+                tableSelector.classList.add('translate-y-full');
+            }
+        });
+
+        // Handle table selection
+        tableSelector.querySelectorAll('.rounded-full').forEach((circle) => {
+            circle.addEventListener('click', (event) => {
+                const tableNumber = (event.target as HTMLElement).textContent;
+                const customerText = containerCustomer.querySelector('p');
+                if (customerText) {
+                    customerText.textContent = `Table ${tableNumber}`;
+                }
+                tableSelector.classList.add('translate-y-full');
+            });
         });
     }
 
@@ -235,4 +314,30 @@ const searchResults = [
             // You can add functionality here in the future
         });
     }
+
+    // Add this new function to handle product filtering
+    function setupProductFilters() {
+        const filterChips = document.querySelectorAll('#pin-view .chip');
+        const productItems = document.querySelectorAll('#pin-view .group');
+
+        filterChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                const filter = chip.getAttribute('data-filter');
+                
+                filterChips.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+
+                productItems.forEach(item => {
+                    if (filter === 'all' || item.getAttribute('data-category') === filter) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+    }
+
+    // Call this function to set up the product filters
+    setupProductFilters();
 </script>
